@@ -5,11 +5,7 @@ class categoriesController{
     async GetAllCategories(req,res){
         const categories = await categoriesModel.find();
 
-        res.status(200).json(JSON.stringify(categories))
-    }
-
-    async AddProduct(req,res){
-        
+        return res.status(200).json(JSON.stringify(categories))
     }
 }
 

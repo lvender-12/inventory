@@ -13,7 +13,6 @@ class productsController{
     async AddProduct(req,res){
         const products = await req.body;
         const err = [];
-        // const existing = await categoriesModel.findOne({ _id: products.categories });
 
         if(validator.isEmpty(products.name || products.stock || products.price || products.categories_id)){
             err.push({field: 'form', msg : 'tidak boleh kosong selain deskripsi'});
@@ -22,7 +21,6 @@ class productsController{
         if (!mongoose.Types.ObjectId.isValid(products.categories_id)) {
             err.push({ field: 'categories_id', msg: 'ID kategori tidak valid' });
         } else {
-            // Cek apakah ID tersebut ada di koleksi
             const existing = await categoriesModel.findById(products.categories_id);
             if (!existing) {
                 err.push({ field: 'categories_id', msg: 'Kategori tidak ditemukan' });
@@ -39,7 +37,7 @@ class productsController{
         products.price = Number(products.price)
         
         if (err.length > 0) {
-            return res.status(400).json({ errors: err });
+            return res.status(400).json({ errors: err, inputData: products  });
         }
 
         try {
@@ -54,6 +52,87 @@ class productsController{
             return res.status(201).json(newProduct);
         } catch (error) {
             return res.status(500).json({ error: 'Gagal menambahkan produk', detail: error.message });
+        }
+    }
+
+    async GetProduct(req,res){
+        try {
+            const categories = await categoriesModel.find();
+            const product = await productsModel.findById(req.body.product_id);
+            return res.status(200).json({
+                categories,
+                product,
+            });
+        } catch (error) {
+            return res.status(500).json({ error: 'Gagal mengambil product', detail: error.message });
+        }
+    }
+
+    async UpdateProduct(req,res){
+        try {
+            const err = [];
+            const product = req.body;
+
+            if(validator.isEmpty(product.name || product.stock || product.price || product.categories_id)){
+                err.push({field: 'form', msg : 'tidak boleh kosong selain deskripsi'});
+            }
+
+            if (!mongoose.Types.ObjectId.isValid(product.categories_id)) {
+                err.push({ field: 'categories_id', msg: 'ID kategori tidak valid' });
+            } else {
+                const existing = await categoriesModel.findById(product.categories_id);
+                if (!existing) {
+                    err.push({ field: 'categories_id', msg: 'Kategori tidak ditemukan' });
+                }
+                
+            }
+
+            if(!validator.isNumeric(product.stock || product.price)){
+                err.push({field: 'stock or price', msg : 'stock dan price harus numeric'});
+            }
+
+            product.stock = Number(product.stock)
+            product.price = Number(product.price)
+            
+            if (err.length > 0) {
+                return res.status(400).json({ errors: err, inputData: product  });
+            }
+
+            const newProduct = await productsModel.updateOne(
+                {
+                    _id: product._id
+                },
+                {
+                    $set:{
+                        name:product.nama,
+                        stock: product.stock,
+                        price: product.price,
+                        categories_id: product.categories_id,
+                        deskripsi: product.deskripsi
+                    }
+                }
+            );
+
+            return res.status(201).json(newProduct);
+
+        } catch (error) {
+            return res.status(500).json({ error: 'Gagal Update Produk', detail: error.message });
+        }
+    }
+
+    async DeleteProduct(req,res){
+        try {
+            const err = [];
+            const id = req.body._id;
+            const product = await productsModel.findById(id)
+            if(!product){
+                err.push({field: 'stock or price', msg : 'stock dan price harus numeric'});
+            }else{
+                await productsModel.deleteOne({_id: id })
+                return res.status(200).json({product});
+            }
+        } catch (error) {
+            return res.status(500).json({ error: 'Gagal menghapus produk', detail: error.message });
         }
     }
 }
