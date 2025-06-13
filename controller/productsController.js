@@ -12,18 +12,23 @@ class productsController{
 
     async AddProduct(req,res){
         const products = await req.body;
+        const cekProduct = await productsModel.findOne({name : products.name});
         const err = [];
 
         if(validator.isEmpty(products.name || products.stock || products.price || products.categories_id)){
             err.push({field: 'form', msg : 'tidak boleh kosong selain deskripsi'});
         }
 
+        if(cekProduct){
+            err.push({field: "form", msg : "product sudah ada"});
+        }
+
         if (!mongoose.Types.ObjectId.isValid(products.categories_id)) {
-            err.push({ field: 'categories_id', msg: 'ID kategori tidak valid' });
+            err.push({ field: 'form', msg: 'ID kategori tidak valid' });
         } else {
             const existing = await categoriesModel.findById(products.categories_id);
             if (!existing) {
-                err.push({ field: 'categories_id', msg: 'Kategori tidak ditemukan' });
+                err.push({ field: 'form', msg: 'Kategori tidak ditemukan' });
             }
             
         }
@@ -104,7 +109,7 @@ class productsController{
                 },
                 {
                     $set:{
-                        name:product.nama,
+                        name:product.name,
                         stock: product.stock,
                         price: product.price,
                         categories_id: product.categories_id,

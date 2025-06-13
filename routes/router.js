@@ -10,4 +10,10 @@ router.post('/product/update', productsController.GetProduct);
 router.put('/product/update', productsController.UpdateProduct);
 router.delete('/product', productsController.DeleteProduct)
 
+router.get('/category', categoriesController.GetAllCategories)
+router.post('/category', categoriesController.AddCategories)
+router.post('/category/update', categoriesController.GetCategory)
+router.put('/category/update', categoriesController.UpdateCategory)
+router.delete('/category', categoriesController.DeleteCategories)
+
 module.exports = router
